@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Gastos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>💸 Controle de Gastos</h1>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for tipo, texto in mensagens %}
+        <p class="aviso {{ tipo }}">{{ texto }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="card">
+      <h2>Novo gasto</h2>
+      <form method="post" action="{{ url_for('adicionar') }}" class="form">
+        <input name="descricao" placeholder="Descrição" required>
+        <input name="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" required>
+        <input name="categoria" list="categorias" placeholder="Categoria" required>
+        <datalist id="categorias">
+          {% for c in categorias %}<option value="{{ c }}">{% endfor %}
+        </datalist>
+        <input name="data" type="date" value="{{ hoje }}" required>
+        <button type="submit">Adicionar</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <form method="get" class="filtros">
+        <label>Mês <input type="month" name="mes" value="{{ mes }}"></label>
+        <label>Categoria
+          <select name="categoria">
+            <option value="">Todas</option>
+            {% for c in categorias %}
+              <option value="{{ c }}" {{ 'selected' if c == categoria_atual }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Filtrar</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Resumo do mês: R$ {{ '%.2f'|format(total_geral) }}</h2>
+      {% for t in totais %}
+        <div class="barra">
+          <span>{{ t['categoria'] }}</span>
+          <div class="trilho"><div class="preenchido" style="width: {{ (t['total'] / maior * 100)|round }}%"></div></div>
+          <strong>R$ {{ '%.2f'|format(t['total']) }}</strong>
+        </div>
+      {% else %}
+        <p class="vazio">Nenhum gasto neste mês.</p>
+      {% endfor %}
+    </section>
+
+    <section class="card">
+      <h2>Gastos</h2>
+      {% if gastos %}
+      <table>
+        <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th class="num">Valor</th><th></th></tr></thead>
+        <tbody>
+        {% for g in gastos %}
+          <tr>
+            <td>{{ g['data'] }}</td>
+            <td>{{ g['descricao'] }}</td>
+            <td>{{ g['categoria'] }}</td>
+            <td class="num">R$ {{ '%.2f'|format(g['valor']) }}</td>
+            <td>
+              <form method="post" action="{{ url_for('remover', gasto_id=g['id']) }}">
+                <input type="hidden" name="mes" value="{{ mes }}">
+                <button class="remover" aria-label="Remover">✕</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="vazio">Nenhum gasto encontrado.</p>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>
