@@ -1,0 +1,37 @@
+import pytest
+
+from gastos import db
+
+
+@pytest.fixture
+def conexao():
+    return db.conectar(":memory:")
+
+
+def test_adicionar_e_listar(conexao):
+    novo_id = db.adicionar_gasto(conexao, "Mercado", 150.0, "alimentacao", "2026-10-05")
+    gastos = db.listar_gastos(conexao)
+    assert len(gastos) == 1
+    assert gastos[0]["id"] == novo_id
+    assert gastos[0]["descricao"] == "Mercado"
+
+
+def test_filtrar_por_categoria(conexao):
+    db.adicionar_gasto(conexao, "Mercado", 150.0, "alimentacao", "2026-10-05")
+    db.adicionar_gasto(conexao, "Ônibus", 20.0, "transporte", "2026-10-06")
+    gastos = db.listar_gastos(conexao, categoria="transporte")
+    assert [g["descricao"] for g in gastos] == ["Ônibus"]
+
+
+def test_remover(conexao):
+    novo_id = db.adicionar_gasto(conexao, "Cinema", 40.0, "lazer", "2026-10-07")
+    assert db.remover_gasto(conexao, novo_id) is True
+    assert db.remover_gasto(conexao, novo_id) is False
+
+
+def test_total_por_categoria(conexao):
+    db.adicionar_gasto(conexao, "Mercado", 100.0, "alimentacao", "2026-10-05")
+    db.adicionar_gasto(conexao, "Padaria", 50.0, "alimentacao", "2026-10-08")
+    db.adicionar_gasto(conexao, "Ônibus", 20.0, "transporte", "2026-09-30")
+    totais = db.total_por_categoria(conexao, mes="2026-10")
+    assert [tuple(t) for t in totais] == [("alimentacao", 150.0)]
