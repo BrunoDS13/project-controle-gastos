@@ -1,0 +1,38 @@
+import pytest
+
+from app import criar_app
+
+
+@pytest.fixture
+def client(tmp_path):
+    app = criar_app(tmp_path / "teste.db")
+    app.config["TESTING"] = True
+    return app.test_client()
+
+
+def test_pagina_inicial_abre(client):
+    resposta = client.get("/")
+    assert resposta.status_code == 200
+    assert "Controle de Gastos" in resposta.get_data(as_text=True)
+
+
+def test_adicionar_e_aparecer_na_lista(client):
+    form = {"descricao": "Mercado", "valor": "150,50", "categoria": "alimentação", "data": "2026-10-05"}
+    resposta = client.post("/adicionar", data=form, follow_redirects=True)
+    html = resposta.get_data(as_text=True)
+    assert "Gasto adicionado!" in html
+    assert "Mercado" in html
+    assert "150.50" in html
+
+
+def test_valor_invalido_mostra_erro(client):
+    form = {"descricao": "X", "valor": "abc", "categoria": "outros", "data": "2026-10-05"}
+    html = client.post("/adicionar", data=form, follow_redirects=True).get_data(as_text=True)
+    assert "Preencha" in html
+
+
+def test_remover(client):
+    form = {"descricao": "Cinema", "valor": "40", "categoria": "lazer", "data": "2026-10-07"}
+    client.post("/adicionar", data=form)
+    html = client.post("/remover/1", data={"mes": "2026-10"}, follow_redirects=True).get_data(as_text=True)
+    assert "Gasto removido." in html
