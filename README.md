@@ -1,5 +1,7 @@
 # Controle de Gastos
 
+[![Testes](https://github.com/BrunoDS13/project-controle-gastos/actions/workflows/tests.yml/badge.svg)](https://github.com/BrunoDS13/project-controle-gastos/actions/workflows/tests.yml)
+
 Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco SQLite.
 
 ![Tema escuro](docs/tema-escuro.png)
@@ -13,6 +15,7 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 
 ## Funcionalidades
 - Cadastro de gastos (descrição, valor, categoria e data), com opção de marcar **gasto fixo**
+- Edição e remoção de gastos (com confirmação antes de apagar)
 - Resumo do mês com total por categoria
 - Comparação do total do mês com o mês anterior (variação em %)
 - Meta mensal com barra de progresso (verde, amarela e vermelha)
@@ -37,7 +40,8 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 - `previsão = (gastos variáveis ÷ dia atual × dias do mês) + gastos fixos`
 - Gastos fixos (aluguel, assinaturas) **não entram no ritmo**, porque acontecem uma vez só. Eles são somados como estão.
 - A previsão aparece só no mês em andamento. Meses passados já têm total final, e meses futuros não têm dados.
-- Nos primeiros dias do mês a estimativa oscila bastante, porque há poucos dados.
+- Ela só aparece **a partir do dia 7**. Antes disso há poucos dados e o ritmo geraria números exagerados, então a tela mostra um aviso.
+- Gastos únicos e grandes que não se repetem devem ser marcados como fixos para não distorcer o ritmo.
 
 **Gráfico**
 - Mostra os 6 meses terminando no mês selecionado. Meses sem gastos aparecem com zero.
@@ -51,14 +55,26 @@ python app.py
 ```
 Abra http://127.0.0.1:5000 no navegador.
 
+## Configuração
+| Variável | Para que serve | Padrão |
+|---|---|---|
+| `SECRET_KEY` | chave usada pelo Flask para as mensagens da tela. Defina em produção. | aleatória a cada execução |
+| `FLASK_DEBUG` | use `1` para ativar o modo debug em desenvolvimento | desligado |
+
+```bash
+SECRET_KEY="uma-chave-longa-e-secreta" python app.py
+```
+
 ## Testes
 ```bash
 pytest
 ```
+Os testes também rodam automaticamente no GitHub Actions a cada push.
 
 ## Estrutura
 ```
 app.py              # rotas Flask
+.github/workflows/  # testes automáticos (GitHub Actions)
 gastos/db.py        # acesso ao banco (SQL)
 gastos/grafico.py   # gráfico mensal (matplotlib)
 gastos/periodos.py  # cálculo de meses
@@ -71,3 +87,6 @@ docs/               # imagens do README
 
 ## Tecnologias
 Python, Flask, SQLite, matplotlib, HTML, CSS e JavaScript.
+
+## Licença
+[MIT](LICENSE)
