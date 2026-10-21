@@ -47,3 +47,22 @@ def test_exportar_csv(client):
     linhas = resposta.get_data(as_text=True).splitlines()
     assert linhas[0] == "data,descricao,categoria,valor"
     assert linhas[1] == "2026-10-05,Mercado,alimentação,150.50"
+
+
+def _adicionar(client, valor, data):
+    client.post("/adicionar", data={"descricao": "Gasto", "valor": valor, "categoria": "outros", "data": data})
+
+
+def test_comparacao_com_mes_anterior(client):
+    _adicionar(client, "100", "2026-09-10")
+    _adicionar(client, "150", "2026-10-10")
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert "2026-09: R$ 100.00" in html
+    assert "50.0%" in html
+    assert "a mais" in html
+
+
+def test_comparacao_sem_mes_anterior(client):
+    _adicionar(client, "150", "2026-10-10")
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert "Sem gastos em 2026-09" in html

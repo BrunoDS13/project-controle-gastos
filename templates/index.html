@@ -48,6 +48,17 @@
 
     <section class="card">
       <h2>Resumo do mês: R$ {{ '%.2f'|format(total_geral) }}</h2>
+      <p class="comparacao">
+        {% if variacao is none %}
+          Sem gastos em {{ mes_passado }} para comparar.
+        {% else %}
+          {{ mes_passado }}: R$ {{ '%.2f'|format(total_passado) }} ·
+          <span class="{{ 'subiu' if variacao > 0 else 'desceu' }}">
+            {{ '▲' if variacao > 0 else '▼' }} {{ '%.1f'|format(variacao|abs) }}%
+          </span>
+          {{ 'a mais' if variacao > 0 else 'a menos' }}
+        {% endif %}
+      </p>
       {% for t in totais %}
         <div class="barra">
           <span>{{ t['categoria'] }}</span>

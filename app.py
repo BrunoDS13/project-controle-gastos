@@ -5,6 +5,7 @@ from datetime import date
 from flask import Flask, Response, flash, redirect, render_template, request, url_for
 
 from gastos import db
+from gastos.periodos import mes_anterior
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
 
@@ -25,15 +26,23 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         gastos = db.listar_gastos(con, categoria=categoria, mes=mes)
         totais = db.total_por_categoria(con, mes=mes)
         categorias = sorted(set(CATEGORIAS_SUGERIDAS) | set(db.listar_categorias(con)))
+        mes_passado = mes_anterior(mes)
+        total_passado = db.total_do_mes(con, mes_passado)
         con.close()
 
         total_geral = sum(t["total"] for t in totais)
+        variacao = None
+        if total_passado > 0:
+            variacao = (total_geral - total_passado) / total_passado * 100
         maior = max((t["total"] for t in totais), default=0)
         return render_template(
             "index.html",
             gastos=gastos,
             totais=totais,
             total_geral=total_geral,
+            mes_passado=mes_passado,
+            total_passado=total_passado,
+            variacao=variacao,
             maior=maior,
             categorias=categorias,
             categoria_atual=categoria,
