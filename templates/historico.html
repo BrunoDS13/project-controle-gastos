@@ -10,6 +10,10 @@
         <div><small>Total registrado</small><strong>R$ {{ '%.2f'|format(total_geral) }}</strong></div>
         <div><small>Meses com gastos</small><strong>{{ quantidade_meses }}</strong></div>
       </div>
+      <div class="exportar">
+        <a class="botao-link" href="{{ url_for('exportar_excel') }}">📗 Exportar tudo para Excel</a>
+        <a class="botao-link" href="{{ url_for('exportar') }}">CSV de todos os meses</a>
+      </div>
     </section>
 
     <section class="card">

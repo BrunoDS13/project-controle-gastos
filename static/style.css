@@ -72,3 +72,5 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .tabela-rolavel { overflow-x:auto; }
 .link-mes { color:var(--texto); text-transform:capitalize; }
 .link-mes:hover { color:var(--acento); }
+.exportar { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.resumo-historico + .exportar { margin-top:16px; }

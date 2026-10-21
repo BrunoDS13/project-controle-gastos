@@ -33,8 +33,17 @@
           </select>
         </label>
         <button type="submit">Filtrar</button>
-        <a class="botao-link" href="{{ url_for('exportar', mes=mes, categoria=categoria_atual) }}">Exportar CSV</a>
       </form>
+    </section>
+
+    <section class="card">
+      <h2>Exportar</h2>
+      <div class="exportar">
+        <a class="botao-link" href="{{ url_for('exportar_excel', mes=mes) }}">📗 Excel de {{ nome_mes }}</a>
+        <a class="botao-link" href="{{ url_for('exportar_excel') }}">📗 Excel de todos os meses</a>
+        <a class="botao-link" href="{{ url_for('exportar', mes=mes) }}">CSV de {{ nome_mes }}</a>
+        <a class="botao-link" href="{{ url_for('exportar') }}">CSV de todos os meses</a>
+      </div>
     </section>
 
     <section class="card">

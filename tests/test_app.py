@@ -277,3 +277,17 @@ def test_exportar_excel_de_todos_os_meses(client):
 
 def test_exportar_excel_com_mes_invalido_da_400(client):
     assert client.get("/exportar.xlsx?mes=lixo").status_code == 400
+
+
+def test_botoes_de_exportacao_na_tela_principal(client):
+    html = client.get("/?mes=2026-09").get_data(as_text=True)
+    assert "/exportar.xlsx?mes=2026-09" in html
+    assert 'href="/exportar.xlsx"' in html
+    assert "Excel de setembro de 2026" in html
+    assert "Excel de todos os meses" in html
+    assert "/exportar?mes=2026-09" in html
+
+
+def test_historico_tem_exportacao_geral(client):
+    html = client.get("/historico").get_data(as_text=True)
+    assert "Exportar tudo para Excel" in html
