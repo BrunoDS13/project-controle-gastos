@@ -32,3 +32,19 @@ def test_gastos_fixos_nao_entram_no_ritmo():
 
 def test_so_gastos_fixos_a_previsao_e_o_proprio_valor():
     assert prever_total(900, "2026-09", date(2026, 9, 10), total_fixo=900) == 900
+
+
+def test_sem_previsao_nos_primeiros_dias():
+    assert prever_total(300, "2026-09", date(2026, 9, 3)) is None
+
+
+def test_previsao_a_partir_do_setimo_dia():
+    assert prever_total(70, "2026-09", date(2026, 9, 7)) is not None
+
+
+def test_poucos_dados_so_vale_para_o_mes_em_andamento():
+    from gastos.previsao import poucos_dados
+
+    assert poucos_dados("2026-09", date(2026, 9, 3)) is True
+    assert poucos_dados("2026-09", date(2026, 9, 7)) is False
+    assert poucos_dados("2026-08", date(2026, 9, 3)) is False

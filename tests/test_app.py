@@ -169,3 +169,11 @@ def test_remover_pede_confirmacao(client):
     _adicionar(client, "150", "2026-10-05")
     html = client.get("/?mes=2026-10").get_data(as_text=True)
     assert "confirm(" in html
+
+
+def test_previsao_some_nos_primeiros_dias_com_aviso(tmp_path):
+    cliente = criar_cliente(tmp_path / "cedo.db", hoje=date(2026, 10, 3))
+    cliente.post("/adicionar", data={"descricao": "Mercado", "valor": "300", "categoria": "alimentação", "data": "2026-10-02"})
+    html = cliente.get("/?mes=2026-10").get_data(as_text=True)
+    assert "Previsão para o fim do mês" not in html
+    assert "poucos dados ainda" in html

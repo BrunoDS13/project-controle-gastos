@@ -59,6 +59,11 @@
           {% endif %}
         </p>
       {% endif %}
+      {% if aguardando_previsao %}
+        <p class="previsao">
+          📈 Previsão do fim do mês: <small>poucos dados ainda. Ela aparece a partir do dia {{ min_dias_previsao }}.</small>
+        </p>
+      {% endif %}
       {% if progresso %}
         <div class="meta">
           <div class="meta-topo">

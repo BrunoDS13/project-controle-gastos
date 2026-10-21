@@ -7,7 +7,7 @@ from flask import Flask, Response, abort, flash, redirect, render_template, requ
 from gastos import db
 from gastos.grafico import gerar_grafico_png
 from gastos.periodos import mes_anterior
-from gastos.previsao import prever_total
+from gastos.previsao import MIN_DIAS_PARA_PREVER, poucos_dados, prever_total
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
 
@@ -59,6 +59,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
         maior = max((t["total"] for t in totais), default=0)
 
         previsao = prever_total(total_geral, mes, hoje(), total_fixo)
+        aguardando_previsao = total_geral > 0 and poucos_dados(mes, hoje())
 
         progresso = None
         if meta:
@@ -78,6 +79,8 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
             variacao=variacao,
             meta=meta,
             previsao=previsao,
+            aguardando_previsao=aguardando_previsao,
+            min_dias_previsao=MIN_DIAS_PARA_PREVER,
             progresso=progresso,
             maior=maior,
             categorias=categorias,
