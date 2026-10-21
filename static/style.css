@@ -45,6 +45,9 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .situacao-ok { color:var(--acento); }
 .form-meta { display:flex; gap:8px; margin:12px 0 16px; }
 .form-meta input[name=valor] { flex:1; }
+.fixo { display:flex; align-items:center; gap:6px; flex:1 1 100%; color:var(--muted); font-size:.9rem; }
+.fixo input { flex:0 0 auto; }
+.selo-fixo { font-size:.7rem; padding:1px 8px; border:1px solid var(--borda); border-radius:999px; color:var(--muted); margin-left:6px; }
 .vazio { color:var(--muted); margin:0; }
 @media (max-width:560px) { .barra { grid-template-columns: 80px 1fr 90px; } th:nth-child(3), td:nth-child(3) { display:none; } }
 

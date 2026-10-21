@@ -30,6 +30,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         categorias = sorted(set(CATEGORIAS_SUGERIDAS) | set(db.listar_categorias(con)))
         mes_passado = mes_anterior(mes)
         total_passado = db.total_do_mes(con, mes_passado)
+        total_fixo = db.total_fixo_do_mes(con, mes)
         meta = db.obter_meta(con, mes)
         con.close()
 
@@ -39,7 +40,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             variacao = (total_geral - total_passado) / total_passado * 100
         maior = max((t["total"] for t in totais), default=0)
 
-        previsao = prever_total(total_geral, mes, date.today())
+        previsao = prever_total(total_geral, mes, date.today(), total_fixo)
 
         progresso = None
         if meta:
@@ -82,7 +83,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             flash("Preencha descrição, categoria, data e um valor maior que zero.", "erro")
         else:
             con = conexao()
-            db.adicionar_gasto(con, descricao, valor, categoria, data)
+            db.adicionar_gasto(con, descricao, valor, categoria, data, fixo=request.form.get("fixo") == "on")
             con.close()
             flash("Gasto adicionado!", "ok")
         return redirect(url_for("index", mes=data[:7] if len(data) >= 7 else None))
@@ -131,9 +132,9 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
 
         saida = io.StringIO()
         escritor = csv.writer(saida)
-        escritor.writerow(["data", "descricao", "categoria", "valor"])
+        escritor.writerow(["data", "descricao", "categoria", "valor", "fixo"])
         for g in gastos:
-            escritor.writerow([g["data"], g["descricao"], g["categoria"], f"{g['valor']:.2f}"])
+            escritor.writerow([g["data"], g["descricao"], g["categoria"], f"{g['valor']:.2f}", "sim" if g["fixo"] else "nao"])
 
         nome = f"gastos-{mes}.csv" if mes else "gastos.csv"
         return Response(

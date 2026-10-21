@@ -45,8 +45,8 @@ def test_exportar_csv(client):
     assert resposta.mimetype == "text/csv"
     assert "attachment" in resposta.headers["Content-Disposition"]
     linhas = resposta.get_data(as_text=True).splitlines()
-    assert linhas[0] == "data,descricao,categoria,valor"
-    assert linhas[1] == "2026-10-05,Mercado,alimentação,150.50"
+    assert linhas[0] == "data,descricao,categoria,valor,fixo"
+    assert linhas[1] == "2026-10-05,Mercado,alimentação,150.50,nao"
 
 
 def _adicionar(client, valor, data):
@@ -115,3 +115,20 @@ def test_previsao_nao_aparece_em_mes_passado(client):
     _adicionar(client, "100", "2020-01-10")
     html = client.get("/?mes=2020-01").get_data(as_text=True)
     assert "Previsão para o fim do mês" not in html
+
+
+def test_gasto_fixo_aparece_marcado(client):
+    form = {"descricao": "Aluguel", "valor": "900", "categoria": "moradia", "data": "2026-10-05", "fixo": "on"}
+    client.post("/adicionar", data=form)
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert 'class="selo-fixo"' in html
+
+
+def test_previsao_ignora_gasto_fixo_na_tela(client):
+    from datetime import date
+
+    hoje = date.today()
+    client.post("/adicionar", data={"descricao": "Aluguel", "valor": "900", "categoria": "moradia", "data": hoje.isoformat(), "fixo": "on"})
+    html = client.get(f"/?mes={hoje.strftime('%Y-%m')}").get_data(as_text=True)
+    # só há gasto fixo: a previsão é o próprio valor, sem multiplicar pelo ritmo
+    assert "R$ 900.00</strong>" in html

@@ -29,6 +29,7 @@
           {% for c in categorias %}<option value="{{ c }}">{% endfor %}
         </datalist>
         <input name="data" type="date" value="{{ hoje }}" required>
+        <label class="fixo"><input type="checkbox" name="fixo"> Gasto fixo (aluguel, assinatura)</label>
         <button type="submit">Adicionar</button>
       </form>
     </section>
@@ -65,7 +66,7 @@
       {% if previsao is not none %}
         <p class="previsao">
           📈 Previsão para o fim do mês: <strong>R$ {{ '%.2f'|format(previsao) }}</strong>
-          <small>(estimativa pelo ritmo atual)</small>
+          <small>(estimativa pelo ritmo atual; gastos fixos não entram no ritmo)</small>
           {% if progresso %}
             <br>
             {% if progresso.previsao_estoura %}
@@ -118,7 +119,7 @@
         {% for g in gastos %}
           <tr>
             <td>{{ g['data'] }}</td>
-            <td>{{ g['descricao'] }}</td>
+            <td>{{ g['descricao'] }}{% if g['fixo'] %} <span class="selo-fixo">fixo</span>{% endif %}</td>
             <td>{{ g['categoria'] }}</td>
             <td class="num">R$ {{ '%.2f'|format(g['valor']) }}</td>
             <td>
