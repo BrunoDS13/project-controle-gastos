@@ -75,3 +75,20 @@ def total_por_categoria(conexao, mes=None):
 def listar_categorias(conexao):
     linhas = conexao.execute("SELECT DISTINCT categoria FROM gastos ORDER BY categoria").fetchall()
     return [linha["categoria"] for linha in linhas]
+
+
+def total_do_mes(conexao, mes):
+    """Soma todos os gastos de um mês ('AAAA-MM'). Devolve 0 se não houver nenhum."""
+    linha = conexao.execute(
+        "SELECT COALESCE(SUM(valor), 0) AS total FROM gastos WHERE data LIKE ?",
+        (f"{mes}%",),
+    ).fetchone()
+    return linha["total"]
+
+
+def total_por_mes(conexao):
+    """Devolve um dicionário {'AAAA-MM': total} com todos os meses que têm gastos."""
+    linhas = conexao.execute(
+        "SELECT substr(data, 1, 7) AS mes, SUM(valor) AS total FROM gastos GROUP BY mes"
+    ).fetchall()
+    return {linha["mes"]: linha["total"] for linha in linhas}

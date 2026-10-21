@@ -35,3 +35,18 @@ def test_total_por_categoria(conexao):
     db.adicionar_gasto(conexao, "Ônibus", 20.0, "transporte", "2026-09-30")
     totais = db.total_por_categoria(conexao, mes="2026-10")
     assert [tuple(t) for t in totais] == [("alimentacao", 150.0)]
+
+
+def test_total_do_mes(conexao):
+    db.adicionar_gasto(conexao, "Mercado", 100.0, "alimentacao", "2026-10-05")
+    db.adicionar_gasto(conexao, "Ônibus", 20.0, "transporte", "2026-10-06")
+    db.adicionar_gasto(conexao, "Cinema", 30.0, "lazer", "2026-09-10")
+    assert db.total_do_mes(conexao, "2026-10") == 120.0
+    assert db.total_do_mes(conexao, "2026-08") == 0
+
+
+def test_total_por_mes(conexao):
+    db.adicionar_gasto(conexao, "Mercado", 100.0, "alimentacao", "2026-10-05")
+    db.adicionar_gasto(conexao, "Cinema", 30.0, "lazer", "2026-09-10")
+    db.adicionar_gasto(conexao, "Padaria", 15.0, "alimentacao", "2026-09-12")
+    assert db.total_por_mes(conexao) == {"2026-10": 100.0, "2026-09": 45.0}
