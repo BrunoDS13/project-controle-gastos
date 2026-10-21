@@ -24,6 +24,14 @@ def criar_tabela(conexao):
         )
         """
     )
+    conexao.execute(
+        """
+        CREATE TABLE IF NOT EXISTS metas (
+            mes TEXT PRIMARY KEY,
+            valor REAL NOT NULL CHECK (valor > 0)
+        )
+        """
+    )
     conexao.commit()
 
 
@@ -92,3 +100,21 @@ def total_por_mes(conexao):
         "SELECT substr(data, 1, 7) AS mes, SUM(valor) AS total FROM gastos GROUP BY mes"
     ).fetchall()
     return {linha["mes"]: linha["total"] for linha in linhas}
+
+
+def definir_meta(conexao, mes, valor):
+    """Define (ou troca) a meta de gastos a partir de um mês ('AAAA-MM')."""
+    conexao.execute(
+        "INSERT INTO metas (mes, valor) VALUES (?, ?) "
+        "ON CONFLICT(mes) DO UPDATE SET valor = excluded.valor",
+        (mes, valor),
+    )
+    conexao.commit()
+
+
+def obter_meta(conexao, mes):
+    """Devolve a meta em vigor no mês: a mais recente definida até ele, ou None."""
+    linha = conexao.execute(
+        "SELECT valor FROM metas WHERE mes <= ? ORDER BY mes DESC LIMIT 1", (mes,)
+    ).fetchone()
+    return linha["valor"] if linha else None

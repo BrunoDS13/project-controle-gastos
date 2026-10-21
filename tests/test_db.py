@@ -50,3 +50,23 @@ def test_total_por_mes(conexao):
     db.adicionar_gasto(conexao, "Cinema", 30.0, "lazer", "2026-09-10")
     db.adicionar_gasto(conexao, "Padaria", 15.0, "alimentacao", "2026-09-12")
     assert db.total_por_mes(conexao) == {"2026-10": 100.0, "2026-09": 45.0}
+
+
+def test_meta_sem_definir_devolve_none(conexao):
+    assert db.obter_meta(conexao, "2026-10") is None
+
+
+def test_definir_e_trocar_meta(conexao):
+    db.definir_meta(conexao, "2026-10", 1500.0)
+    assert db.obter_meta(conexao, "2026-10") == 1500.0
+    db.definir_meta(conexao, "2026-10", 1800.0)
+    assert db.obter_meta(conexao, "2026-10") == 1800.0
+
+
+def test_meta_vale_para_meses_seguintes(conexao):
+    db.definir_meta(conexao, "2026-08", 1500.0)
+    assert db.obter_meta(conexao, "2026-10") == 1500.0
+    assert db.obter_meta(conexao, "2026-07") is None
+    db.definir_meta(conexao, "2026-10", 2000.0)
+    assert db.obter_meta(conexao, "2026-09") == 1500.0
+    assert db.obter_meta(conexao, "2026-11") == 2000.0
