@@ -134,3 +134,38 @@ def test_previsao_ignora_gasto_fixo_na_tela(client):
     html = client.get("/?mes=2026-10").get_data(as_text=True)
     # só há gasto fixo: a previsão é o próprio valor, sem multiplicar pelo ritmo
     assert "R$ 900.00</strong>" in html
+
+
+def test_tela_de_edicao_vem_preenchida(client):
+    _adicionar(client, "150", "2026-10-05")
+    html = client.get("/editar/1").get_data(as_text=True)
+    assert 'value="Gasto"' in html
+    assert 'value="150.00"' in html
+
+
+def test_editar_gasto(client):
+    _adicionar(client, "150", "2026-10-05")
+    form = {"descricao": "Aluguel", "valor": "900", "categoria": "moradia", "data": "2026-10-06", "fixo": "on"}
+    html = client.post("/editar/1", data=form, follow_redirects=True).get_data(as_text=True)
+    assert "Gasto atualizado!" in html
+    assert "Aluguel" in html
+    assert 'class="selo-fixo"' in html
+
+
+def test_editar_com_dados_invalidos_mantem_o_gasto(client):
+    _adicionar(client, "150", "2026-10-05")
+    form = {"descricao": "", "valor": "900", "categoria": "moradia", "data": "2026-10-06"}
+    html = client.post("/editar/1", data=form, follow_redirects=True).get_data(as_text=True)
+    assert "Preencha" in html
+    assert 'value="150.00"' in html
+
+
+def test_editar_gasto_inexistente_da_404(client):
+    assert client.get("/editar/999").status_code == 404
+    assert client.post("/editar/999", data={}).status_code == 404
+
+
+def test_remover_pede_confirmacao(client):
+    _adicionar(client, "150", "2026-10-05")
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert "confirm(" in html

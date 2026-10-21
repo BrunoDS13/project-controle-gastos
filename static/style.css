@@ -24,6 +24,10 @@ table { width:100%; border-collapse:collapse; }
 th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--borda); }
 th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .num { text-align:right; white-space:nowrap; }
+.acoes { white-space:nowrap; }
+.acoes form { display:inline; }
+.editar { color:var(--muted); text-decoration:none; padding:2px 8px; }
+.editar:hover { color:var(--acento); }
 .remover { background:none; color:var(--muted); padding:2px 8px; }
 .remover:hover { color:var(--erro); }
 .barra { display:grid; grid-template-columns: 110px 1fr 110px; gap:10px; align-items:center; margin:8px 0; }

@@ -2,7 +2,7 @@ import csv
 import io
 from datetime import date
 
-from flask import Flask, Response, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
 
 from gastos import db
 from gastos.grafico import gerar_grafico_png
@@ -10,6 +10,23 @@ from gastos.periodos import mes_anterior
 from gastos.previsao import prever_total
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
+
+
+def ler_formulario_gasto(form):
+    """Lê e valida o formulário de gasto. Devolve (dados, erro); um dos dois é None."""
+    descricao = form.get("descricao", "").strip()
+    categoria = form.get("categoria", "").strip()
+    data = form.get("data", "").strip()
+    try:
+        valor = float(form.get("valor", "").replace(",", "."))
+        date.fromisoformat(data)
+    except ValueError:
+        valor = 0
+
+    if not descricao or not categoria or valor <= 0:
+        return None, "Preencha descrição, categoria, data e um valor maior que zero."
+    dados = {"descricao": descricao, "valor": valor, "categoria": categoria, "data": data, "fixo": form.get("fixo") == "on"}
+    return dados, None
 
 
 def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
@@ -71,23 +88,39 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
 
     @app.route("/adicionar", methods=["POST"])
     def adicionar():
-        descricao = request.form.get("descricao", "").strip()
-        categoria = request.form.get("categoria", "").strip()
-        data = request.form.get("data", "").strip()
-        try:
-            valor = float(request.form.get("valor", "").replace(",", "."))
-            date.fromisoformat(data)
-        except ValueError:
-            valor = 0
+        dados, erro = ler_formulario_gasto(request.form)
+        if erro:
+            flash(erro, "erro")
+            return redirect(url_for("index", mes=request.form.get("data", "")[:7] or None))
 
-        if not descricao or not categoria or valor <= 0:
-            flash("Preencha descrição, categoria, data e um valor maior que zero.", "erro")
-        else:
-            con = conexao()
-            db.adicionar_gasto(con, descricao, valor, categoria, data, fixo=request.form.get("fixo") == "on")
+        con = conexao()
+        db.adicionar_gasto(con, **dados)
+        con.close()
+        flash("Gasto adicionado!", "ok")
+        return redirect(url_for("index", mes=dados["data"][:7]))
+
+    @app.route("/editar/<int:gasto_id>", methods=["GET", "POST"])
+    def editar(gasto_id):
+        con = conexao()
+        gasto = db.buscar_gasto(con, gasto_id)
+        if gasto is None:
             con.close()
-            flash("Gasto adicionado!", "ok")
-        return redirect(url_for("index", mes=data[:7] if len(data) >= 7 else None))
+            abort(404)
+
+        if request.method == "POST":
+            dados, erro = ler_formulario_gasto(request.form)
+            if erro:
+                con.close()
+                flash(erro, "erro")
+                return redirect(url_for("editar", gasto_id=gasto_id))
+            db.atualizar_gasto(con, gasto_id, **dados)
+            con.close()
+            flash("Gasto atualizado!", "ok")
+            return redirect(url_for("index", mes=dados["data"][:7]))
+
+        categorias = sorted(set(CATEGORIAS_SUGERIDAS) | set(db.listar_categorias(con)))
+        con.close()
+        return render_template("editar.html", gasto=gasto, categorias=categorias)
 
     @app.route("/meta", methods=["POST"])
     def definir_meta():

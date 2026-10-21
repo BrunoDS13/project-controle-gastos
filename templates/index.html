@@ -104,8 +104,9 @@
             <td>{{ g['descricao'] }}{% if g['fixo'] %} <span class="selo-fixo">fixo</span>{% endif %}</td>
             <td>{{ g['categoria'] }}</td>
             <td class="num">R$ {{ '%.2f'|format(g['valor']) }}</td>
-            <td>
-              <form method="post" action="{{ url_for('remover', gasto_id=g['id']) }}">
+            <td class="acoes">
+              <a class="editar" href="{{ url_for('editar', gasto_id=g['id']) }}" aria-label="Editar">✎</a>
+              <form method="post" action="{{ url_for('remover', gasto_id=g['id']) }}" onsubmit="return confirm('Remover este gasto?')">
                 <input type="hidden" name="mes" value="{{ mes }}">
                 <button class="remover" aria-label="Remover">✕</button>
               </form>

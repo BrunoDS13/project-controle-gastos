@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Editar gasto | Controle de Gastos{% endblock %}
+
+{% block conteudo %}
+    <section class="card">
+      <h2>Editar gasto</h2>
+      <form method="post" class="form">
+        <input name="descricao" value="{{ gasto['descricao'] }}" placeholder="Descrição" required>
+        <input name="valor" type="number" step="0.01" min="0.01" value="{{ '%.2f'|format(gasto['valor']) }}" placeholder="Valor (R$)" required>
+        <input name="categoria" list="categorias" value="{{ gasto['categoria'] }}" placeholder="Categoria" required>
+        <datalist id="categorias">
+          {% for c in categorias %}<option value="{{ c }}">{% endfor %}
+        </datalist>
+        <input name="data" type="date" value="{{ gasto['data'] }}" required>
+        <label class="fixo"><input type="checkbox" name="fixo" {{ 'checked' if gasto['fixo'] }}> Gasto fixo (aluguel, assinatura)</label>
+        <button type="submit">Salvar</button>
+        <a class="botao-link" href="{{ url_for('index', mes=gasto['data'][:7]) }}">Cancelar</a>
+      </form>
+    </section>
+{% endblock %}
