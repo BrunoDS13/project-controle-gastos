@@ -62,6 +62,20 @@
           {{ 'a mais' if variacao > 0 else 'a menos' }}
         {% endif %}
       </p>
+      {% if previsao is not none %}
+        <p class="previsao">
+          📈 Previsão para o fim do mês: <strong>R$ {{ '%.2f'|format(previsao) }}</strong>
+          <small>(estimativa pelo ritmo atual)</small>
+          {% if progresso %}
+            <br>
+            {% if progresso.previsao_estoura %}
+              <span class="subiu">Nesse ritmo, você passa da meta em R$ {{ '%.2f'|format(progresso.diferenca_previsao) }}.</span>
+            {% else %}
+              <span class="desceu">Nesse ritmo, você termina R$ {{ '%.2f'|format(progresso.diferenca_previsao) }} abaixo da meta.</span>
+            {% endif %}
+          {% endif %}
+        </p>
+      {% endif %}
       {% if progresso %}
         <div class="meta">
           <div class="meta-topo">

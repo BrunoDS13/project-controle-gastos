@@ -34,6 +34,8 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .subiu { color:var(--erro); font-weight:600; }
 .desceu { color:var(--acento); font-weight:600; }
 .grafico { width:100%; height:auto; border-radius:8px; display:block; }
+.previsao { margin:0 0 14px; line-height:1.5; }
+.previsao small { color:var(--muted); }
 .meta { margin-bottom:12px; }
 .meta-topo { display:flex; justify-content:space-between; margin-bottom:6px; }
 .preenchido.atencao { background:#d29922; }

@@ -7,6 +7,7 @@ from flask import Flask, Response, flash, redirect, render_template, request, ur
 from gastos import db
 from gastos.grafico import gerar_grafico_png
 from gastos.periodos import mes_anterior
+from gastos.previsao import prever_total
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
 
@@ -38,11 +39,16 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             variacao = (total_geral - total_passado) / total_passado * 100
         maior = max((t["total"] for t in totais), default=0)
 
+        previsao = prever_total(total_geral, mes, date.today())
+
         progresso = None
         if meta:
             percentual = total_geral / meta * 100
             situacao = "ok" if percentual < 80 else "atencao" if percentual <= 100 else "estourou"
             progresso = {"percentual": percentual, "situacao": situacao, "restante": meta - total_geral}
+            if previsao is not None:
+                progresso["previsao_estoura"] = previsao > meta
+                progresso["diferenca_previsao"] = abs(previsao - meta)
         return render_template(
             "index.html",
             gastos=gastos,
@@ -52,6 +58,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             total_passado=total_passado,
             variacao=variacao,
             meta=meta,
+            previsao=previsao,
             progresso=progresso,
             maior=maior,
             categorias=categorias,

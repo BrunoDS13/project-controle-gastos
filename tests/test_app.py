@@ -100,3 +100,18 @@ def test_meta_estourada(client):
 def test_meta_invalida(client):
     html = client.post("/meta", data={"mes": "2026-10", "valor": "-5"}, follow_redirects=True).get_data(as_text=True)
     assert "Informe uma meta maior que zero." in html
+
+
+def test_previsao_aparece_no_mes_atual(client):
+    from datetime import date
+
+    hoje = date.today()
+    _adicionar(client, "100", hoje.isoformat())
+    html = client.get(f"/?mes={hoje.strftime('%Y-%m')}").get_data(as_text=True)
+    assert "Previsão para o fim do mês" in html
+
+
+def test_previsao_nao_aparece_em_mes_passado(client):
+    _adicionar(client, "100", "2020-01-10")
+    html = client.get("/?mes=2020-01").get_data(as_text=True)
+    assert "Previsão para o fim do mês" not in html
