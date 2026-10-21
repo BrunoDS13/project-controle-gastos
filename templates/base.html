@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}Controle de Gastos{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <div class="topo">
+      <h1>💸 Controle de Gastos</h1>
+      <button id="tema" type="button" aria-label="Alternar tema">☀️</button>
+    </div>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for tipo, texto in mensagens %}
+        <p class="aviso {{ tipo }}">{{ texto }}</p>
+      {% endfor %}
+    {% endwith %}
+
+{% block conteudo %}{% endblock %}
+  </main>
+  <script src="{{ url_for('static', filename='tema.js') }}"></script>
+</body>
+</html>
