@@ -73,3 +73,9 @@ def test_rota_do_grafico_devolve_png(client):
     resposta = client.get("/grafico.png?mes=2026-10")
     assert resposta.mimetype == "image/png"
     assert resposta.data.startswith(b"\x89PNG")
+
+
+def test_pagina_tem_botao_de_tema(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'id="tema"' in html
+    assert "tema.js" in html

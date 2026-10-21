@@ -8,7 +8,10 @@
 </head>
 <body>
   <main>
-    <h1>💸 Controle de Gastos</h1>
+    <div class="topo">
+      <h1>💸 Controle de Gastos</h1>
+      <button id="tema" type="button" aria-label="Alternar tema">☀️</button>
+    </div>
 
     {% with mensagens = get_flashed_messages(with_categories=true) %}
       {% for tipo, texto in mensagens %}
@@ -101,5 +104,6 @@
       {% endif %}
     </section>
   </main>
+  <script src="{{ url_for('static', filename='tema.js') }}"></script>
 </body>
 </html>

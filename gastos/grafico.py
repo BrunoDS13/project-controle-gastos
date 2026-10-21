@@ -4,8 +4,6 @@ from matplotlib.figure import Figure
 
 from gastos.periodos import ultimos_meses
 
-FUNDO = "#161b22"
-TEXTO = "#e6edf3"
 MUDO = "#8b949e"
 DESTAQUE = "#3fb950"
 APAGADO = "#2ea043"
@@ -21,9 +19,9 @@ def gerar_grafico_png(totais_por_mes, mes_final, quantidade=6):
     cores = [DESTAQUE if mes == mes_final else APAGADO for mes in meses]
     rotulos = [f"{mes[5:]}/{mes[:4]}" for mes in meses]
 
-    figura = Figure(figsize=(7, 3.2), dpi=110, facecolor=FUNDO)
+    figura = Figure(figsize=(7, 3.2), dpi=110, facecolor="none")
     eixo = figura.subplots()
-    eixo.set_facecolor(FUNDO)
+    eixo.set_facecolor("none")
 
     barras = eixo.bar(rotulos, valores, color=cores, width=0.6)
     for barra, valor in zip(barras, valores):
@@ -34,11 +32,11 @@ def gerar_grafico_png(totais_por_mes, mes_final, quantidade=6):
                 f"R$ {valor:,.0f}".replace(",", "."),
                 ha="center",
                 va="bottom",
-                color=TEXTO,
+                color=MUDO,
                 fontsize=8,
             )
 
-    eixo.set_title("Total gasto por mês", color=TEXTO, fontsize=11, loc="left")
+    eixo.set_title("Total gasto por mês", color=MUDO, fontsize=11, loc="left")
     eixo.tick_params(colors=MUDO, labelsize=8)
     eixo.set_ylim(0, max(valores + [1]) * 1.18)
     eixo.yaxis.set_visible(False)
@@ -48,5 +46,5 @@ def gerar_grafico_png(totais_por_mes, mes_final, quantidade=6):
     figura.tight_layout()
 
     buffer = io.BytesIO()
-    figura.savefig(buffer, format="png", facecolor=FUNDO)
+    figura.savefig(buffer, format="png", transparent=True)
     return buffer.getvalue()
