@@ -49,6 +49,21 @@ def adicionar_gasto(conexao, descricao, valor, categoria, data, fixo=False):
     return cursor.lastrowid
 
 
+def buscar_gasto(conexao, gasto_id):
+    """Devolve um gasto pelo id, ou None se não existir."""
+    return conexao.execute("SELECT * FROM gastos WHERE id = ?", (gasto_id,)).fetchone()
+
+
+def atualizar_gasto(conexao, gasto_id, descricao, valor, categoria, data, fixo=False):
+    """Atualiza todos os campos de um gasto. Devolve True se o id existia."""
+    cursor = conexao.execute(
+        "UPDATE gastos SET descricao = ?, valor = ?, categoria = ?, data = ?, fixo = ? WHERE id = ?",
+        (descricao, valor, categoria, data, int(fixo), gasto_id),
+    )
+    conexao.commit()
+    return cursor.rowcount > 0
+
+
 def listar_gastos(conexao, categoria=None, mes=None):
     """Devolve os gastos, do mais recente para o mais antigo.
 

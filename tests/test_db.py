@@ -97,3 +97,20 @@ def test_banco_antigo_sem_coluna_fixo_e_migrado(tmp_path):
     gasto = db.listar_gastos(conexao)[0]
     assert gasto["descricao"] == "Velho"
     assert gasto["fixo"] == 0
+
+
+def test_buscar_gasto(conexao):
+    novo_id = db.adicionar_gasto(conexao, "Mercado", 100.0, "alimentacao", "2026-10-05")
+    assert db.buscar_gasto(conexao, novo_id)["descricao"] == "Mercado"
+    assert db.buscar_gasto(conexao, 999) is None
+
+
+def test_atualizar_gasto(conexao):
+    novo_id = db.adicionar_gasto(conexao, "Mercdo", 100.0, "alimentacao", "2026-10-05")
+    assert db.atualizar_gasto(conexao, novo_id, "Mercado", 120.0, "alimentacao", "2026-10-06", fixo=True) is True
+    gasto = db.buscar_gasto(conexao, novo_id)
+    assert (gasto["descricao"], gasto["valor"], gasto["data"], gasto["fixo"]) == ("Mercado", 120.0, "2026-10-06", 1)
+
+
+def test_atualizar_gasto_inexistente(conexao):
+    assert db.atualizar_gasto(conexao, 999, "X", 1.0, "outros", "2026-10-05") is False
