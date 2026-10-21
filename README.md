@@ -7,7 +7,9 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 ![Tema escuro](docs/tema-escuro.png)
 
 <details>
-<summary>Ver tema claro</summary>
+<summary>Ver histórico mensal e tema claro</summary>
+
+![Histórico mensal](docs/historico.png)
 
 ![Tema claro](docs/tema-claro.png)
 
@@ -16,14 +18,15 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 ## Funcionalidades
 - Cadastro de gastos (descrição, valor, categoria e data), com opção de marcar **gasto fixo**
 - Edição e remoção de gastos (com confirmação antes de apagar)
+- Navegação entre meses (← anterior / próximo →) e filtro por mês e categoria
+- **Histórico mensal**: todos os meses lado a lado, com total, variação e situação da meta
 - Resumo do mês com total por categoria
 - Comparação do total do mês com o mês anterior (variação em %)
 - Meta mensal com barra de progresso (verde, amarela e vermelha)
 - Previsão do total no fim do mês, pelo ritmo atual de gastos
 - Gráfico do total gasto nos últimos 6 meses (matplotlib)
-- Filtro por mês e por categoria
 - Tema claro e escuro, que lembra a escolha do usuário
-- Exportação dos gastos para CSV (respeita o filtro de mês e categoria)
+- **Exportação para Excel (.xlsx)** de um mês ou de todos os meses, e CSV compatível com o Excel
 - Testes automatizados com pytest
 
 ## Regras de cálculo
@@ -45,6 +48,22 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 
 **Gráfico**
 - Mostra os 6 meses terminando no mês selecionado. Meses sem gastos aparecem com zero.
+
+## Exportar para o Excel
+Na tela principal, o card **Exportar** tem quatro opções:
+
+| Botão | O que gera |
+|---|---|
+| Excel do mês | planilha `.xlsx` só com o mês selecionado |
+| Excel de todos os meses | planilha com uma aba **Resumo** (com gráfico) e uma aba por mês |
+| CSV do mês / de todos os meses | arquivo `.csv` para abrir no Excel ou importar em outras ferramentas |
+
+- Na planilha, datas e valores são **de verdade** (dá para somar, filtrar e criar tabelas dinâmicas). Cada aba tem uma linha de **Total** com fórmula.
+- O CSV usa `;` como separador, vírgula nos decimais e UTF-8 com BOM, que é o formato que o Excel em português abre sem quebrar acentos nem colunas.
+- Também dá para acessar direto: `/exportar.xlsx`, `/exportar.xlsx?mes=2026-10`, `/exportar` e `/exportar?mes=2026-10`.
+
+## Seus dados
+Tudo fica no arquivo `gastos.db`, na pasta onde o app roda. Para fazer **backup**, copie esse arquivo. Para começar do zero, apague-o.
 
 ## Como rodar
 ```bash
@@ -76,17 +95,18 @@ Os testes também rodam automaticamente no GitHub Actions a cada push.
 app.py              # rotas Flask
 .github/workflows/  # testes automáticos (GitHub Actions)
 gastos/db.py        # acesso ao banco (SQL)
+gastos/excel.py     # geração da planilha .xlsx (openpyxl)
 gastos/grafico.py   # gráfico mensal (matplotlib)
 gastos/periodos.py  # cálculo de meses
 gastos/previsao.py  # previsão do total do mês
-templates/          # páginas HTML
+templates/          # páginas HTML (principal, histórico e edição)
 static/             # CSS e JavaScript (tema)
 tests/              # testes do banco, dos cálculos e das rotas
 docs/               # imagens do README
 ```
 
 ## Tecnologias
-Python, Flask, SQLite, matplotlib, HTML, CSS e JavaScript.
+Python, Flask, SQLite, matplotlib, openpyxl, pytest, HTML, CSS e JavaScript.
 
 ## Licença
 [MIT](LICENSE)
