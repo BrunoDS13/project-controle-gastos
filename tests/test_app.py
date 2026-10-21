@@ -205,3 +205,30 @@ def test_mes_invalido_cai_no_mes_atual(client):
         assert resposta.status_code == 200
         assert "outubro de 2026" in resposta.get_data(as_text=True)
     assert client.get("/grafico.png?mes=lixo").status_code == 200
+
+
+def test_historico_lista_todos_os_meses(client):
+    _adicionar(client, "100", "2026-08-10")
+    _adicionar(client, "150", "2026-09-10")
+    _adicionar(client, "300", "2026-10-10")
+    html = client.get("/historico").get_data(as_text=True)
+    assert "agosto de 2026" in html and "setembro de 2026" in html and "outubro de 2026" in html
+    assert "R$ 300.00" in html
+    assert "R$ 183.33" in html  # média de 100, 150 e 300
+    assert "100.0%" in html  # outubro dobrou em relação a setembro
+    assert "mes=2026-09" in html  # link para abrir o mês
+
+
+def test_historico_mostra_situacao_da_meta(client):
+    _adicionar(client, "900", "2026-10-10")
+    client.post("/meta", data={"mes": "2026-10", "valor": "1000"})
+    html = client.get("/historico").get_data(as_text=True)
+    assert "R$ 1000.00" in html
+    assert "90%" in html
+    assert "situacao-atencao" in html
+
+
+def test_historico_sem_nenhum_gasto_mostra_so_o_mes_atual(client):
+    resposta = client.get("/historico")
+    assert resposta.status_code == 200
+    assert "outubro de 2026" in resposta.get_data(as_text=True)

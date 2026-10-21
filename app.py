@@ -31,6 +31,13 @@ def ler_formulario_gasto(form):
     return dados, None
 
 
+def situacao_da_meta(percentual):
+    """Classifica o quanto da meta já foi gasto: 'ok' (<80%), 'atencao' (80% a 100%) ou 'estourou'."""
+    if percentual < 80:
+        return "ok"
+    return "atencao" if percentual <= 100 else "estourou"
+
+
 def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
     """`hoje` devolve a data atual; os testes passam uma data fixa no lugar."""
     app = Flask(__name__)
@@ -72,7 +79,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
         progresso = None
         if meta:
             percentual = total_geral / meta * 100
-            situacao = "ok" if percentual < 80 else "atencao" if percentual <= 100 else "estourou"
+            situacao = situacao_da_meta(percentual)
             progresso = {"percentual": percentual, "situacao": situacao, "restante": meta - total_geral}
             if previsao is not None:
                 progresso["previsao_estoura"] = previsao > meta
@@ -99,6 +106,42 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
             categoria_atual=categoria,
             mes=mes,
             hoje=hoje().isoformat(),
+        )
+
+    @app.route("/historico")
+    def historico():
+        con = conexao()
+        totais = db.total_por_mes(con)
+        mes_atual = hoje().strftime("%Y-%m")
+        meses = sorted(set(totais) | {mes_atual}, reverse=True)
+
+        linhas = []
+        for mes in meses:
+            total = totais.get(mes, 0)
+            anterior = totais.get(mes_anterior(mes), 0)
+            meta = db.obter_meta(con, mes)
+            percentual = total / meta * 100 if meta else None
+            linhas.append(
+                {
+                    "mes": mes,
+                    "nome": nome_do_mes(mes),
+                    "total": total,
+                    "variacao": (total - anterior) / anterior * 100 if anterior > 0 else None,
+                    "meta": meta,
+                    "percentual": percentual,
+                    "situacao": situacao_da_meta(percentual) if meta else None,
+                }
+            )
+        con.close()
+
+        media = sum(totais.values()) / len(totais) if totais else 0
+        return render_template(
+            "historico.html",
+            linhas=linhas,
+            media=media,
+            total_geral=sum(totais.values()),
+            quantidade_meses=len(totais),
+            mes_atual=mes_atual,
         )
 
     @app.route("/adicionar", methods=["POST"])

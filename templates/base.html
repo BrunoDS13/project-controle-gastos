@@ -9,8 +9,11 @@
 <body>
   <main>
     <div class="topo">
-      <h1>💸 Controle de Gastos</h1>
-      <button id="tema" type="button" aria-label="Alternar tema">☀️</button>
+      <h1><a class="titulo" href="{{ url_for('index') }}">💸 Controle de Gastos</a></h1>
+      <div class="topo-acoes">
+        <a class="botao-link" href="{{ url_for('historico') }}">Histórico</a>
+        <button id="tema" type="button" aria-label="Alternar tema">☀️</button>
+      </div>
     </div>
 
     {% with mensagens = get_flashed_messages(with_categories=true) %}

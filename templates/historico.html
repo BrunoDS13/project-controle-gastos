@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block titulo %}Histórico | Controle de Gastos{% endblock %}
+
+{% block conteudo %}
+    <section class="card">
+      <h2>Histórico mensal</h2>
+      <div class="resumo-historico">
+        <div><small>Média por mês</small><strong>R$ {{ '%.2f'|format(media) }}</strong></div>
+        <div><small>Total registrado</small><strong>R$ {{ '%.2f'|format(total_geral) }}</strong></div>
+        <div><small>Meses com gastos</small><strong>{{ quantidade_meses }}</strong></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <img class="grafico" src="{{ url_for('grafico', mes=mes_atual) }}" alt="Gráfico do total gasto por mês">
+    </section>
+
+    <section class="card">
+      <div class="tabela-rolavel">
+      <table>
+        <thead>
+          <tr><th>Mês</th><th class="num">Total</th><th class="num">Vs. mês anterior</th><th class="num">Meta</th><th class="num">% da meta</th></tr>
+        </thead>
+        <tbody>
+        {% for l in linhas %}
+          <tr>
+            <td><a class="link-mes" href="{{ url_for('index', mes=l.mes) }}">{{ l.nome }}</a></td>
+            <td class="num">R$ {{ '%.2f'|format(l.total) }}</td>
+            <td class="num">
+              {% if l.variacao is none %}<span class="vazio">-</span>
+              {% else %}<span class="{{ 'subiu' if l.variacao > 0 else 'desceu' }}">{{ '▲' if l.variacao > 0 else '▼' }} {{ '%.1f'|format(l.variacao|abs) }}%</span>{% endif %}
+            </td>
+            <td class="num">{% if l.meta %}R$ {{ '%.2f'|format(l.meta) }}{% else %}<span class="vazio">-</span>{% endif %}</td>
+            <td class="num">
+              {% if l.percentual is none %}<span class="vazio">-</span>
+              {% else %}<strong class="situacao-{{ l.situacao }}">{{ '%.0f'|format(l.percentual) }}%</strong>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </section>
+{% endblock %}
