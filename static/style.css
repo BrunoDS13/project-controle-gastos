@@ -30,5 +30,6 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .comparacao { color:var(--muted); margin:0 0 12px; font-size:.9rem; }
 .subiu { color:var(--erro); font-weight:600; }
 .desceu { color:var(--acento); font-weight:600; }
+.grafico { width:100%; height:auto; border-radius:8px; display:block; }
 .vazio { color:var(--muted); margin:0; }
 @media (max-width:560px) { .barra { grid-template-columns: 80px 1fr 90px; } th:nth-child(3), td:nth-child(3) { display:none; } }

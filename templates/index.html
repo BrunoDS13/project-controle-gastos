@@ -71,6 +71,10 @@
     </section>
 
     <section class="card">
+      <img class="grafico" src="{{ url_for('grafico', mes=mes) }}" alt="Gráfico do total gasto por mês">
+    </section>
+
+    <section class="card">
       <h2>Gastos</h2>
       {% if gastos %}
       <table>

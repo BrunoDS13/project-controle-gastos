@@ -5,6 +5,7 @@ from datetime import date
 from flask import Flask, Response, flash, redirect, render_template, request, url_for
 
 from gastos import db
+from gastos.grafico import gerar_grafico_png
 from gastos.periodos import mes_anterior
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
@@ -77,6 +78,14 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         con.close()
         flash("Gasto removido." if removido else "Gasto não encontrado.", "ok" if removido else "erro")
         return redirect(url_for("index", mes=request.form.get("mes") or None))
+
+    @app.route("/grafico.png")
+    def grafico():
+        mes = request.args.get("mes") or date.today().strftime("%Y-%m")
+        con = conexao()
+        totais = db.total_por_mes(con)
+        con.close()
+        return Response(gerar_grafico_png(totais, mes), mimetype="image/png")
 
     @app.route("/exportar")
     def exportar():

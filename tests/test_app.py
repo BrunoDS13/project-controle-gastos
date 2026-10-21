@@ -66,3 +66,10 @@ def test_comparacao_sem_mes_anterior(client):
     _adicionar(client, "150", "2026-10-10")
     html = client.get("/?mes=2026-10").get_data(as_text=True)
     assert "Sem gastos em 2026-09" in html
+
+
+def test_rota_do_grafico_devolve_png(client):
+    _adicionar(client, "100", "2026-10-10")
+    resposta = client.get("/grafico.png?mes=2026-10")
+    assert resposta.mimetype == "image/png"
+    assert resposta.data.startswith(b"\x89PNG")
