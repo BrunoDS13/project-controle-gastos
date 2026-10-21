@@ -17,6 +17,11 @@
     </section>
 
     <section class="card">
+      <nav class="nav-meses" aria-label="Navegar entre meses">
+        <a href="{{ url_for('index', mes=mes_passado) }}">← {{ nome_mes_passado }}</a>
+        <strong>{{ nome_mes }}</strong>
+        <a href="{{ url_for('index', mes=mes_proximo) }}">{{ nome_mes_proximo }} →</a>
+      </nav>
       <form method="get" class="filtros">
         <label>Mês <input type="month" name="mes" value="{{ mes }}"></label>
         <label>Categoria

@@ -190,3 +190,18 @@ def test_sem_variavel_a_chave_e_aleatoria_e_nao_fixa(tmp_path, monkeypatch):
     chave_b = criar_app(tmp_path / "b.db").config["SECRET_KEY"]
     assert chave_a != chave_b
     assert len(chave_a) >= 32
+
+
+def test_navegacao_entre_meses(client):
+    html = client.get("/?mes=2026-01").get_data(as_text=True)
+    assert "janeiro de 2026" in html
+    assert "mes=2025-12" in html and "dezembro de 2025" in html
+    assert "mes=2026-02" in html and "fevereiro de 2026" in html
+
+
+def test_mes_invalido_cai_no_mes_atual(client):
+    for ruim in ["abc", "2026-13", "", "2026-1"]:
+        resposta = client.get(f"/?mes={ruim}")
+        assert resposta.status_code == 200
+        assert "outubro de 2026" in resposta.get_data(as_text=True)
+    assert client.get("/grafico.png?mes=lixo").status_code == 200

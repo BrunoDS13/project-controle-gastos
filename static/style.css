@@ -58,3 +58,10 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .topo { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
 .topo h1 { margin:0; }
 #tema { background:none; border:1px solid var(--borda); color:var(--texto); padding:4px 10px; }
+
+.titulo { color:inherit; text-decoration:none; }
+.topo-acoes { display:flex; gap:8px; align-items:center; }
+.nav-meses { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.nav-meses a { color:var(--muted); text-decoration:none; font-size:.9rem; }
+.nav-meses a:hover { color:var(--acento); }
+.nav-meses strong { text-transform:capitalize; }

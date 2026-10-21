@@ -8,7 +8,7 @@ from flask import Flask, Response, abort, flash, redirect, render_template, requ
 
 from gastos import db
 from gastos.grafico import gerar_grafico_png
-from gastos.periodos import mes_anterior
+from gastos.periodos import mes_anterior, mes_seguinte, mes_valido, nome_do_mes
 from gastos.previsao import MIN_DIAS_PARA_PREVER, poucos_dados, prever_total
 
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
@@ -41,10 +41,15 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
     def conexao():
         return db.conectar(app.config["CAMINHO_BANCO"])
 
+    def mes_escolhido():
+        """Mês pedido na URL ('AAAA-MM'); se vier vazio ou inválido, usa o mês atual."""
+        mes = request.args.get("mes")
+        return mes if mes_valido(mes) else hoje().strftime("%Y-%m")
+
     @app.route("/")
     def index():
         categoria = request.args.get("categoria") or None
-        mes = request.args.get("mes") or hoje().strftime("%Y-%m")
+        mes = mes_escolhido()
         con = conexao()
         gastos = db.listar_gastos(con, categoria=categoria, mes=mes)
         totais = db.total_por_categoria(con, mes=mes)
@@ -78,6 +83,10 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
             totais=totais,
             total_geral=total_geral,
             mes_passado=mes_passado,
+            mes_proximo=mes_seguinte(mes),
+            nome_mes=nome_do_mes(mes),
+            nome_mes_passado=nome_do_mes(mes_passado),
+            nome_mes_proximo=nome_do_mes(mes_seguinte(mes)),
             total_passado=total_passado,
             variacao=variacao,
             meta=meta,
@@ -156,7 +165,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
 
     @app.route("/grafico.png")
     def grafico():
-        mes = request.args.get("mes") or hoje().strftime("%Y-%m")
+        mes = mes_escolhido()
         con = conexao()
         totais = db.total_por_mes(con)
         con.close()
