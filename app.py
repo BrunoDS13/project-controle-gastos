@@ -12,7 +12,8 @@ from gastos.previsao import prever_total
 CATEGORIAS_SUGERIDAS = ["alimentação", "transporte", "moradia", "lazer", "saúde", "educação", "outros"]
 
 
-def criar_app(caminho_banco=db.CAMINHO_PADRAO):
+def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
+    """`hoje` devolve a data atual; os testes passam uma data fixa no lugar."""
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "troque-esta-chave-em-producao"
     app.config["CAMINHO_BANCO"] = caminho_banco
@@ -23,7 +24,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
     @app.route("/")
     def index():
         categoria = request.args.get("categoria") or None
-        mes = request.args.get("mes") or date.today().strftime("%Y-%m")
+        mes = request.args.get("mes") or hoje().strftime("%Y-%m")
         con = conexao()
         gastos = db.listar_gastos(con, categoria=categoria, mes=mes)
         totais = db.total_por_categoria(con, mes=mes)
@@ -40,7 +41,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             variacao = (total_geral - total_passado) / total_passado * 100
         maior = max((t["total"] for t in totais), default=0)
 
-        previsao = prever_total(total_geral, mes, date.today(), total_fixo)
+        previsao = prever_total(total_geral, mes, hoje(), total_fixo)
 
         progresso = None
         if meta:
@@ -65,7 +66,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             categorias=categorias,
             categoria_atual=categoria,
             mes=mes,
-            hoje=date.today().isoformat(),
+            hoje=hoje().isoformat(),
         )
 
     @app.route("/adicionar", methods=["POST"])
@@ -116,7 +117,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
 
     @app.route("/grafico.png")
     def grafico():
-        mes = request.args.get("mes") or date.today().strftime("%Y-%m")
+        mes = request.args.get("mes") or hoje().strftime("%Y-%m")
         con = conexao()
         totais = db.total_por_mes(con)
         con.close()

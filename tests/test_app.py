@@ -1,13 +1,21 @@
+from datetime import date
+
 import pytest
 
 from app import criar_app
 
+HOJE = date(2026, 10, 21)
+
+
+def criar_cliente(caminho, hoje=HOJE):
+    app = criar_app(caminho, hoje=lambda: hoje)
+    app.config["TESTING"] = True
+    return app.test_client()
+
 
 @pytest.fixture
 def client(tmp_path):
-    app = criar_app(tmp_path / "teste.db")
-    app.config["TESTING"] = True
-    return app.test_client()
+    return criar_cliente(tmp_path / "teste.db")
 
 
 def test_pagina_inicial_abre(client):
@@ -103,11 +111,8 @@ def test_meta_invalida(client):
 
 
 def test_previsao_aparece_no_mes_atual(client):
-    from datetime import date
-
-    hoje = date.today()
-    _adicionar(client, "100", hoje.isoformat())
-    html = client.get(f"/?mes={hoje.strftime('%Y-%m')}").get_data(as_text=True)
+    _adicionar(client, "100", "2026-10-10")
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
     assert "Previsão para o fim do mês" in html
 
 
@@ -125,10 +130,7 @@ def test_gasto_fixo_aparece_marcado(client):
 
 
 def test_previsao_ignora_gasto_fixo_na_tela(client):
-    from datetime import date
-
-    hoje = date.today()
-    client.post("/adicionar", data={"descricao": "Aluguel", "valor": "900", "categoria": "moradia", "data": hoje.isoformat(), "fixo": "on"})
-    html = client.get(f"/?mes={hoje.strftime('%Y-%m')}").get_data(as_text=True)
+    client.post("/adicionar", data={"descricao": "Aluguel", "valor": "900", "categoria": "moradia", "data": "2026-10-05", "fixo": "on"})
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
     # só há gasto fixo: a previsão é o próprio valor, sem multiplicar pelo ritmo
     assert "R$ 900.00</strong>" in html
