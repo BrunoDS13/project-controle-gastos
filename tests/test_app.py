@@ -177,3 +177,16 @@ def test_previsao_some_nos_primeiros_dias_com_aviso(tmp_path):
     html = cliente.get("/?mes=2026-10").get_data(as_text=True)
     assert "Previsão para o fim do mês" not in html
     assert "poucos dados ainda" in html
+
+
+def test_chave_secreta_vem_da_variavel_de_ambiente(tmp_path, monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", "minha-chave-de-teste")
+    assert criar_app(tmp_path / "a.db").config["SECRET_KEY"] == "minha-chave-de-teste"
+
+
+def test_sem_variavel_a_chave_e_aleatoria_e_nao_fixa(tmp_path, monkeypatch):
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    chave_a = criar_app(tmp_path / "a.db").config["SECRET_KEY"]
+    chave_b = criar_app(tmp_path / "b.db").config["SECRET_KEY"]
+    assert chave_a != chave_b
+    assert len(chave_a) >= 32

@@ -1,5 +1,7 @@
 import csv
 import io
+import os
+import secrets
 from datetime import date
 
 from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
@@ -32,7 +34,8 @@ def ler_formulario_gasto(form):
 def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
     """`hoje` devolve a data atual; os testes passam uma data fixa no lugar."""
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = "troque-esta-chave-em-producao"
+    # Em produção defina SECRET_KEY. Sem ela, usa-se uma chave aleatória (os avisos pendentes se perdem ao reiniciar).
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
     app.config["CAMINHO_BANCO"] = caminho_banco
 
     def conexao():
@@ -186,4 +189,4 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
 app = criar_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.environ.get("FLASK_DEBUG") == "1")
