@@ -70,3 +70,30 @@ def test_meta_vale_para_meses_seguintes(conexao):
     db.definir_meta(conexao, "2026-10", 2000.0)
     assert db.obter_meta(conexao, "2026-09") == 1500.0
     assert db.obter_meta(conexao, "2026-11") == 2000.0
+
+
+def test_gasto_fixo_e_total_fixo(conexao):
+    db.adicionar_gasto(conexao, "Aluguel", 900.0, "moradia", "2026-10-05", fixo=True)
+    db.adicionar_gasto(conexao, "Mercado", 100.0, "alimentacao", "2026-10-06")
+    assert db.total_fixo_do_mes(conexao, "2026-10") == 900.0
+    assert db.total_do_mes(conexao, "2026-10") == 1000.0
+    assert [bool(g["fixo"]) for g in db.listar_gastos(conexao)] == [False, True]
+
+
+def test_banco_antigo_sem_coluna_fixo_e_migrado(tmp_path):
+    import sqlite3
+
+    caminho = tmp_path / "antigo.db"
+    antigo = sqlite3.connect(caminho)
+    antigo.execute(
+        "CREATE TABLE gastos (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, "
+        "valor REAL NOT NULL, categoria TEXT NOT NULL, data TEXT NOT NULL)"
+    )
+    antigo.execute("INSERT INTO gastos (descricao, valor, categoria, data) VALUES ('Velho', 10, 'outros', '2026-01-01')")
+    antigo.commit()
+    antigo.close()
+
+    conexao = db.conectar(caminho)
+    gasto = db.listar_gastos(conexao)[0]
+    assert gasto["descricao"] == "Velho"
+    assert gasto["fixo"] == 0

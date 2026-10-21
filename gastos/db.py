@@ -24,6 +24,10 @@ def criar_tabela(conexao):
         )
         """
     )
+    colunas = [linha["name"] for linha in conexao.execute("PRAGMA table_info(gastos)")]
+    if "fixo" not in colunas:
+        # bancos criados antes dessa coluna recebem o campo sem perder dados
+        conexao.execute("ALTER TABLE gastos ADD COLUMN fixo INTEGER NOT NULL DEFAULT 0")
     conexao.execute(
         """
         CREATE TABLE IF NOT EXISTS metas (
@@ -35,11 +39,11 @@ def criar_tabela(conexao):
     conexao.commit()
 
 
-def adicionar_gasto(conexao, descricao, valor, categoria, data):
-    """Insere um gasto e devolve o id criado."""
+def adicionar_gasto(conexao, descricao, valor, categoria, data, fixo=False):
+    """Insere um gasto e devolve o id criado. `fixo` marca gastos recorrentes (aluguel, assinaturas)."""
     cursor = conexao.execute(
-        "INSERT INTO gastos (descricao, valor, categoria, data) VALUES (?, ?, ?, ?)",
-        (descricao, valor, categoria, data),
+        "INSERT INTO gastos (descricao, valor, categoria, data, fixo) VALUES (?, ?, ?, ?, ?)",
+        (descricao, valor, categoria, data, int(fixo)),
     )
     conexao.commit()
     return cursor.lastrowid
@@ -118,3 +122,12 @@ def obter_meta(conexao, mes):
         "SELECT valor FROM metas WHERE mes <= ? ORDER BY mes DESC LIMIT 1", (mes,)
     ).fetchone()
     return linha["valor"] if linha else None
+
+
+def total_fixo_do_mes(conexao, mes):
+    """Soma só os gastos marcados como fixos em um mês ('AAAA-MM')."""
+    linha = conexao.execute(
+        "SELECT COALESCE(SUM(valor), 0) AS total FROM gastos WHERE fixo = 1 AND data LIKE ?",
+        (f"{mes}%",),
+    ).fetchone()
+    return linha["total"]
