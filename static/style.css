@@ -12,6 +12,8 @@ input, select { background:var(--bg); color:var(--texto); border:1px solid var(-
 .form input { flex:1 1 110px; }
 button { background:var(--acento); color:#fff; border:0; border-radius:8px; padding:9px 16px; font:inherit; cursor:pointer; }
 button:hover { opacity:.9; }
+.botao-link { color:var(--texto); border:1px solid var(--borda); border-radius:8px; padding:8px 14px; text-decoration:none; }
+.botao-link:hover { border-color:var(--acento); }
 .aviso { padding:10px 14px; border-radius:8px; margin-bottom:16px; }
 .aviso.ok { background:#12321c; color:#7ee787; }
 .aviso.erro { background:#3c1618; color:#ffa198; }

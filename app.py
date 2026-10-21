@@ -1,6 +1,8 @@
+import csv
+import io
 from datetime import date
 
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, Response, flash, redirect, render_template, request, url_for
 
 from gastos import db
 
@@ -66,6 +68,27 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         con.close()
         flash("Gasto removido." if removido else "Gasto não encontrado.", "ok" if removido else "erro")
         return redirect(url_for("index", mes=request.form.get("mes") or None))
+
+    @app.route("/exportar")
+    def exportar():
+        categoria = request.args.get("categoria") or None
+        mes = request.args.get("mes") or None
+        con = conexao()
+        gastos = db.listar_gastos(con, categoria=categoria, mes=mes)
+        con.close()
+
+        saida = io.StringIO()
+        escritor = csv.writer(saida)
+        escritor.writerow(["data", "descricao", "categoria", "valor"])
+        for g in gastos:
+            escritor.writerow([g["data"], g["descricao"], g["categoria"], f"{g['valor']:.2f}"])
+
+        nome = f"gastos-{mes}.csv" if mes else "gastos.csv"
+        return Response(
+            saida.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={nome}"},
+        )
 
     return app
 

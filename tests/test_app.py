@@ -36,3 +36,14 @@ def test_remover(client):
     client.post("/adicionar", data=form)
     html = client.post("/remover/1", data={"mes": "2026-10"}, follow_redirects=True).get_data(as_text=True)
     assert "Gasto removido." in html
+
+
+def test_exportar_csv(client):
+    form = {"descricao": "Mercado", "valor": "150,50", "categoria": "alimentação", "data": "2026-10-05"}
+    client.post("/adicionar", data=form)
+    resposta = client.get("/exportar?mes=2026-10")
+    assert resposta.mimetype == "text/csv"
+    assert "attachment" in resposta.headers["Content-Disposition"]
+    linhas = resposta.get_data(as_text=True).splitlines()
+    assert linhas[0] == "data,descricao,categoria,valor"
+    assert linhas[1] == "2026-10-05,Mercado,alimentação,150.50"
