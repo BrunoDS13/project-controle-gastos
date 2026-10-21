@@ -9,6 +9,9 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 - Remoção de gastos
 - Comparação do total do mês com o mês anterior (variação em %)
 - Gráfico do total gasto nos últimos 6 meses (matplotlib)
+- Meta mensal com barra de progresso (verde, amarela e vermelha)
+- Previsão do total no fim do mês, pelo ritmo atual de gastos
+- Tema claro e escuro, que lembra a escolha do usuário
 - Exportação dos gastos para CSV (respeita o filtro de mês e categoria)
 - Testes automatizados com pytest
 
@@ -32,6 +35,7 @@ app.py            # rotas Flask
 gastos/db.py      # acesso ao banco (SQL)
 gastos/grafico.py # gráfico mensal (matplotlib)
 gastos/periodos.py# cálculo de meses
+gastos/previsao.py# previsão do total do mês
 templates/        # páginas HTML
 static/           # CSS
 tests/            # testes do banco e das rotas
