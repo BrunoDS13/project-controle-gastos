@@ -246,3 +246,34 @@ def test_historico_sem_nenhum_gasto_mostra_so_o_mes_atual(client):
     resposta = client.get("/historico")
     assert resposta.status_code == 200
     assert "outubro de 2026" in resposta.get_data(as_text=True)
+
+
+def test_exportar_excel_do_mes(client):
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    _adicionar(client, "100", "2026-09-10")
+    _adicionar(client, "250", "2026-10-10")
+    resposta = client.get("/exportar.xlsx?mes=2026-10")
+    assert resposta.mimetype == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    assert "gastos-2026-10.xlsx" in resposta.headers["Content-Disposition"]
+    planilha = load_workbook(BytesIO(resposta.data))
+    assert planilha.sheetnames == ["2026-10"]
+    assert planilha["2026-10"]["D2"].value == 250.0
+
+
+def test_exportar_excel_de_todos_os_meses(client):
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    _adicionar(client, "100", "2026-08-10")
+    _adicionar(client, "100", "2026-10-10")
+    resposta = client.get("/exportar.xlsx")
+    assert "gastos-todos-os-meses.xlsx" in resposta.headers["Content-Disposition"]
+    assert load_workbook(BytesIO(resposta.data)).sheetnames == ["Resumo", "2026-08", "2026-10"]
+
+
+def test_exportar_excel_com_mes_invalido_da_400(client):
+    assert client.get("/exportar.xlsx?mes=lixo").status_code == 400

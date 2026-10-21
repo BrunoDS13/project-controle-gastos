@@ -7,6 +7,7 @@ from datetime import date
 from flask import Flask, Response, abort, flash, redirect, render_template, request, url_for
 
 from gastos import db
+from gastos.excel import gerar_xlsx
 from gastos.grafico import gerar_grafico_png
 from gastos.periodos import mes_anterior, mes_seguinte, mes_valido, nome_do_mes
 from gastos.previsao import MIN_DIAS_PARA_PREVER, poucos_dados, prever_total
@@ -237,6 +238,37 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
         return Response(
             saida.getvalue().encode("utf-8"),
             mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={nome}"},
+        )
+
+    @app.route("/exportar.xlsx")
+    def exportar_excel():
+        """Planilha do Excel: com `mes`, só aquele mês; sem `mes`, todos os meses mais uma aba de resumo."""
+        mes = request.args.get("mes") or None
+        if mes and not mes_valido(mes):
+            abort(400)
+
+        con = conexao()
+        meses = [mes] if mes else sorted(db.total_por_mes(con))
+        gastos_por_mes = {m: db.listar_gastos(con, mes=m) for m in meses}
+        resumo = None
+        if not mes:
+            resumo = [
+                {
+                    "mes": m,
+                    "total": db.total_do_mes(con, m),
+                    "fixos": db.total_fixo_do_mes(con, m),
+                    "quantidade": len(gastos_por_mes[m]),
+                    "meta": db.obter_meta(con, m),
+                }
+                for m in meses
+            ]
+        con.close()
+
+        nome = f"gastos-{mes}.xlsx" if mes else "gastos-todos-os-meses.xlsx"
+        return Response(
+            gerar_xlsx(gastos_por_mes, resumo),
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={nome}"},
         )
 
