@@ -79,3 +79,24 @@ def test_pagina_tem_botao_de_tema(client):
     html = client.get("/").get_data(as_text=True)
     assert 'id="tema"' in html
     assert "tema.js" in html
+
+
+def test_definir_meta_e_ver_progresso(client):
+    _adicionar(client, "800", "2026-10-10")
+    client.post("/meta", data={"mes": "2026-10", "valor": "1000"})
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert "Meta: R$ 1000.00" in html
+    assert "80%" in html
+    assert "Ainda dá para gastar R$ 200.00" in html
+
+
+def test_meta_estourada(client):
+    _adicionar(client, "1200", "2026-10-10")
+    client.post("/meta", data={"mes": "2026-10", "valor": "1000"})
+    html = client.get("/?mes=2026-10").get_data(as_text=True)
+    assert "Você passou da meta em R$ 200.00" in html
+
+
+def test_meta_invalida(client):
+    html = client.post("/meta", data={"mes": "2026-10", "valor": "-5"}, follow_redirects=True).get_data(as_text=True)
+    assert "Informe uma meta maior que zero." in html

@@ -29,6 +29,7 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         categorias = sorted(set(CATEGORIAS_SUGERIDAS) | set(db.listar_categorias(con)))
         mes_passado = mes_anterior(mes)
         total_passado = db.total_do_mes(con, mes_passado)
+        meta = db.obter_meta(con, mes)
         con.close()
 
         total_geral = sum(t["total"] for t in totais)
@@ -36,6 +37,12 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
         if total_passado > 0:
             variacao = (total_geral - total_passado) / total_passado * 100
         maior = max((t["total"] for t in totais), default=0)
+
+        progresso = None
+        if meta:
+            percentual = total_geral / meta * 100
+            situacao = "ok" if percentual < 80 else "atencao" if percentual <= 100 else "estourou"
+            progresso = {"percentual": percentual, "situacao": situacao, "restante": meta - total_geral}
         return render_template(
             "index.html",
             gastos=gastos,
@@ -44,6 +51,8 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             mes_passado=mes_passado,
             total_passado=total_passado,
             variacao=variacao,
+            meta=meta,
+            progresso=progresso,
             maior=maior,
             categorias=categorias,
             categoria_atual=categoria,
@@ -70,6 +79,24 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO):
             con.close()
             flash("Gasto adicionado!", "ok")
         return redirect(url_for("index", mes=data[:7] if len(data) >= 7 else None))
+
+    @app.route("/meta", methods=["POST"])
+    def definir_meta():
+        mes = request.form.get("mes", "").strip()
+        try:
+            valor = float(request.form.get("valor", "").replace(",", "."))
+            date.fromisoformat(f"{mes}-01")
+        except ValueError:
+            valor = 0
+
+        if valor <= 0:
+            flash("Informe uma meta maior que zero.", "erro")
+        else:
+            con = conexao()
+            db.definir_meta(con, mes, valor)
+            con.close()
+            flash("Meta atualizada!", "ok")
+        return redirect(url_for("index", mes=mes or None))
 
     @app.route("/remover/<int:gasto_id>", methods=["POST"])
     def remover(gasto_id):
