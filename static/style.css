@@ -64,13 +64,15 @@ th { color:var(--muted); font-weight:500; font-size:.85rem; }
 .nav-meses { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 .nav-meses a { color:var(--muted); text-decoration:none; font-size:.9rem; }
 .nav-meses a:hover { color:var(--acento); }
-.nav-meses strong { text-transform:capitalize; }
+.nav-meses strong { display:inline-block; }
+.nav-meses strong::first-letter { text-transform:uppercase; }
 .resumo-historico { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
 .resumo-historico div { display:flex; flex-direction:column; gap:2px; }
 .resumo-historico small { color:var(--muted); }
 .resumo-historico strong { font-size:1.25rem; }
 .tabela-rolavel { overflow-x:auto; }
-.link-mes { color:var(--texto); text-transform:capitalize; }
+.link-mes { color:var(--texto); display:inline-block; }
+.link-mes::first-letter { text-transform:uppercase; }
 .link-mes:hover { color:var(--acento); }
 .exportar { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
 .resumo-historico + .exportar { margin-top:16px; }
