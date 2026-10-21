@@ -46,15 +46,29 @@ def test_remover(client):
     assert "Gasto removido." in html
 
 
-def test_exportar_csv(client):
+def test_exportar_csv_compativel_com_excel(client):
     form = {"descricao": "Mercado", "valor": "150,50", "categoria": "alimentação", "data": "2026-10-05"}
     client.post("/adicionar", data=form)
     resposta = client.get("/exportar?mes=2026-10")
     assert resposta.mimetype == "text/csv"
     assert "attachment" in resposta.headers["Content-Disposition"]
-    linhas = resposta.get_data(as_text=True).splitlines()
-    assert linhas[0] == "data,descricao,categoria,valor,fixo"
-    assert linhas[1] == "2026-10-05,Mercado,alimentação,150.50,nao"
+    assert "gastos-2026-10.csv" in resposta.headers["Content-Disposition"]
+    assert resposta.data.startswith(b"\xef\xbb\xbf")  # BOM UTF-8
+    linhas = resposta.data.decode("utf-8-sig").splitlines()
+    assert linhas[0] == "data;descrição;categoria;valor;fixo"
+    assert linhas[1] == "2026-10-05;Mercado;alimentação;150,50;não"
+
+
+def test_exportar_csv_de_todos_os_meses(client):
+    _adicionar(client, "100", "2026-09-10")
+    _adicionar(client, "200", "2026-10-10")
+    resposta = client.get("/exportar")
+    assert "gastos-todos-os-meses.csv" in resposta.headers["Content-Disposition"]
+    assert len(resposta.data.decode("utf-8-sig").splitlines()) == 3  # cabeçalho + 2 gastos
+
+
+def test_exportar_com_mes_invalido_da_400(client):
+    assert client.get("/exportar?mes=lixo").status_code == 400
 
 
 def _adicionar(client, valor, data):

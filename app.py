@@ -216,21 +216,26 @@ def criar_app(caminho_banco=db.CAMINHO_PADRAO, hoje=date.today):
 
     @app.route("/exportar")
     def exportar():
+        """CSV pensado para abrir direto no Excel em português (BOM, ';' e vírgula decimal)."""
         categoria = request.args.get("categoria") or None
         mes = request.args.get("mes") or None
+        if mes and not mes_valido(mes):
+            abort(400)
         con = conexao()
         gastos = db.listar_gastos(con, categoria=categoria, mes=mes)
         con.close()
 
         saida = io.StringIO()
-        escritor = csv.writer(saida)
-        escritor.writerow(["data", "descricao", "categoria", "valor", "fixo"])
+        saida.write("\ufeff")  # BOM: o Excel reconhece UTF-8 e mantém os acentos
+        escritor = csv.writer(saida, delimiter=";")
+        escritor.writerow(["data", "descrição", "categoria", "valor", "fixo"])
         for g in gastos:
-            escritor.writerow([g["data"], g["descricao"], g["categoria"], f"{g['valor']:.2f}", "sim" if g["fixo"] else "nao"])
+            valor = f"{g['valor']:.2f}".replace(".", ",")
+            escritor.writerow([g["data"], g["descricao"], g["categoria"], valor, "sim" if g["fixo"] else "não"])
 
-        nome = f"gastos-{mes}.csv" if mes else "gastos.csv"
+        nome = f"gastos-{mes}.csv" if mes else "gastos-todos-os-meses.csv"
         return Response(
-            saida.getvalue(),
+            saida.getvalue().encode("utf-8"),
             mimetype="text/csv",
             headers={"Content-Disposition": f"attachment; filename={nome}"},
         )
