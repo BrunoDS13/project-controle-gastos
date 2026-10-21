@@ -7,6 +7,7 @@ Aplicação web em Flask para registrar e acompanhar gastos pessoais, com banco 
 - Resumo do mês com total por categoria
 - Filtro por mês e por categoria
 - Remoção de gastos
+- Exportação dos gastos para CSV (respeita o filtro de mês e categoria)
 - Testes automatizados com pytest
 
 ## Como rodar
